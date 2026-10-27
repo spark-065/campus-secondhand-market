@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>校园市集</title>
+<style>
+:root{--p:#1b6e9c;--ps:#e3f1f8;--pd:#155a82;--bg:#f4f7fc;--card:#fff;--ink:#1a2332;--ink2:#5a6b80;--ink3:#9aa8b8;--line:#e8eef5;--danger:#ff5a5f}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{height:100vh;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:linear-gradient(135deg,#eef3f8,#e6edf5);display:flex;align-items:center;justify-content:center;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit}
+.phone{position:relative;width:420px;height:780px;background:var(--bg);border-radius:44px;box-shadow:0 30px 70px rgba(20,50,80,.28),0 0 0 10px #1c2630;overflow:hidden;display:flex;flex-direction:column}
+.status-bar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;background:var(--bg);z-index:30}
+.screen{flex:1;position:relative;overflow:hidden}
+.page{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg);overflow:hidden}
+.page.active{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 20px}
+.scroll::-webkit-scrollbar{width:0}
+.header{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:8px 18px 12px;background:var(--bg);z-index:5}
+.header h1{font-size:20px;font-weight:700}
+.header .sub{font-size:12px;color:var(--ink3)}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:0 4px 12px rgba(27,110,156,.1);display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .2s}
+.back-btn:active{transform:scale(.88)}
+.search-row{display:flex;align-items:center;gap:12px;width:100%}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;height:42px;padding:0 16px;background:var(--card);border-radius:999px;border:1.5px solid transparent;box-shadow:0 4px 12px rgba(27,110,156,.08);transition:border-color .25s,box-shadow .25s}
+.search-box:focus-within{border-color:var(--p);box-shadow:0 0 0 4px rgba(27,110,156,.12)}
+.search-box input{border:none;outline:none;background:none;font-size:14px;width:100%;color:var(--ink)}
+.search-box input::placeholder{color:var(--ink3)}
+.cat-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(27,110,156,.3);transition:transform .2s}
+.cat-btn:active{transform:scale(.9)}
+.cancel-btn{color:var(--p);font-size:14px;font-weight:600;padding:0 4px;flex-shrink:0;background:none;border:none}
+.search-panel{position:absolute;top:56px;left:18px;right:18px;background:var(--card);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(27,110,156,.15);z-index:10;max-height:280px;overflow-y:auto}
+.search-section{margin-bottom:12px}
+.search-section:last-child{margin-bottom:0}
+.search-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--ink3)}
+.search-section-head button{font-size:11px;color:var(--ink3)}
+.search-tags{display:flex;flex-wrap:wrap;gap:8px}
+.search-tag{padding:5px 12px;border-radius:999px;background:var(--bg);font-size:12px;color:var(--ink2);cursor:pointer;transition:all .15s}
+.search-tag:active{transform:scale(.94)}
+.goods-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:8px 0}
+.goods-card{background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 6px 18px rgba(27,110,156,.08);transition:transform .22s,box-shadow .22s;cursor:pointer}
+.goods-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(27,110,156,.14)}
+.goods-card:active{transform:scale(.97)}
+.goods-cover{height:120px;display:flex;align-items:center;justify-content:center;font-size:44px}
+.goods-meta{padding:10px 12px 14px}
+.goods-name{font-size:13px;font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.goods-price{font-size:17px;font-weight:700;color:var(--p);margin-top:6px}
+.goods-price small{font-size:11px}
+.list-end{text-align:center;color:var(--ink3);font-size:12px;padding:22px 0 8px}
+.back-top{position:absolute;right:18px;bottom:18px;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 20px rgba(27,110,156,.35);opacity:0;transform:translateY(10px) scale(.8);pointer-events:none;transition:opacity .3s,transform .3s;z-index:20}
+.back-top.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.back-top:active{transform:scale(.88)}
+.filter-group{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(27,110,156,.08)}
+.group-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer}
+.fold-arrow{font-size:12px;color:var(--ink3);transition:transform .2s}
+.filter-group.folded .chip-grid{display:none}
+.filter-group.folded .fold-arrow{transform:rotate(-90deg)}
+.group-index{width:22px;height:22px;border-radius:50%;background:var(--p);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.group-head h3{font-size:15px;font-weight:600}
+.group-hint{margin-left:auto;font-size:11px;color:var(--ink3);background:var(--bg);padding:2px 8px;border-radius:999px}
+.chip-grid{display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px;transition:all .18s}
+.chip .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.chip .dot.sq{border-radius:4px}
+.chip .dot::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .18s}
+.chip .dot.sq::after{border-radius:1px}
+.chip.on{border-color:var(--p);background:var(--ps);color:var(--pd);font-weight:600}
+.chip.on .dot{border-color:var(--p);background:var(--p)}
+.chip.on .dot::after{transform:scale(1)}
+.chip:active{transform:scale(.94)}
+.filter-footer{flex-shrink:0;display:flex;gap:12px;padding:14px 18px 18px;background:var(--bg)}
+.btn-ghost{flex:1;height:48px;border-radius:14px;border:1.5px solid var(--p);color:var(--p);font-size:15px;font-weight:600;background:var(--card);transition:transform .18s}
+.btn-ghost:active{transform:scale(.97)}
+.btn-primary{flex:1.4;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;font-size:15px;font-weight:600;box-shadow:0 8px 18px rgba(27,110,156,.32);transition:transform .18s}
+.btn-primary:active{transform:scale(.97)}
+.seller-row{display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);border-radius:18px;box-shadow:0 6px 18px rgba(27,110,156,.08)}
+.avatar-circle{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;overflow:hidden}
+.avatar-circle img{width:100%;height:100%;object-fit:cover}
+.detail-cover{width:100%;height:220px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:80px;margin-top:14px}
+.info-card{background:var(--card);border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 6px 18px rgba(27,110,156,.08)}
+.info-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.tag-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.tag{padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px}
+.tag.price{background:var(--ps);color:var(--p)}
+.tag.cond{background:#fef3c7;color:#d97706}
+.tag.cate{background:#ede9fe;color:#7c3aed}
+.comment-item{padding:12px 0;display:flex;gap:10px}
+.comment-item .c-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+.comment-item .c-info{flex:1}
+.comment-item .c-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.seller-tag{font-size:9px;color:#fff;background:var(--p);border-radius:4px;padding:1px 5px}
+.comment-item .c-text{font-size:13px;color:var(--ink2);margin-top:5px;line-height:18px}
+.comment-item .c-time{font-size:11px;color:var(--ink3);margin-top:4px}
+.similar-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;touch-action:pan-x;scroll-behavior:smooth}
+.similar-scroll::-webkit-scrollbar{height:4px}
+.similar-scroll::-webkit-scrollbar-thumb{background:var(--ink3);border-radius:2px}
+.similar-scroll::-webkit-scrollbar-track{background:transparent}
+.sim-arrow{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:5;font-size:16px;color:var(--p);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sim-arrow:active{transform:translateY(-50%) scale(.9)}
+.sim-arrow.left{left:0}
+.sim-arrow.right{right:0}
+.similar-card{width:130px;flex-shrink:0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 4px 12px rgba(27,110,156,.08);cursor:pointer;transition:transform .2s}
+.similar-card:active{transform:scale(.95)}
+.similar-card .sc-cover{height:90px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.similar-card .sc-meta{padding:8px}
+.similar-card .sc-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.similar-card .sc-price{font-size:14px;font-weight:700;color:var(--p);margin-top:4px}
+.detail-footer{flex-shrink:0;display:flex;gap:10px;padding:10px 18px 14px;background:var(--card);border-top:1px solid var(--line)}
+.detail-footer input{flex:1;height:40px;border-radius:20px;background:var(--bg);border:none;padding:0 16px;font-size:14px;outline:none}
+.send-btn{height:40px;border-radius:20px;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;font-weight:600;padding:0 20px;font-size:14px}
+.fav-btn{width:40px;height:40px;border-radius:50%;background:var(--bg);font-size:20px;display:flex;align-items:center;justify-content:center;transition:transform .2s;flex-shrink:0}
+.fav-btn:active{transform:scale(.88)}
+.circle-card{background:var(--card);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(27,110,156,.08);transition:transform .22s;cursor:pointer}
+.circle-card:active{transform:scale(.98)}
+.circle-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.circle-cover{width:100%;height:130px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:46px;margin-bottom:10px}
+.circle-text{font-size:13px;color:var(--ink2);line-height:20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.msg-card{position:relative;background:var(--card);border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:12px;box-shadow:0 6px 18px rgba(27,110,156,.08);transition:transform .2s;cursor:pointer}
+.msg-card:active{transform:scale(.98)}
+.msg-badge{position:absolute;top:10px;right:14px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.chat-msg{display:flex;padding:6px 16px}
+.chat-msg.me{justify-content:flex-end}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:16px;font-size:14px;box-shadow:0 2px 8px rgba(27,110,156,.06)}
+.chat-msg.me .chat-bubble{background:var(--p);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.other .chat-bubble{background:var(--card);color:var(--ink);border-bottom-left-radius:4px}
+.chat-time{font-size:10px;color:var(--ink3);margin-top:4px}
+.chat-msg.me .chat-time{text-align:right}
+.mine-profile{background:linear-gradient(135deg,var(--p),var(--pd));border-radius:22px;padding:22px 20px;display:flex;align-items:center;gap:16px;color:#fff;box-shadow:0 10px 24px rgba(27,110,156,.28);position:relative}
+.mine-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;overflow:hidden;cursor:pointer;position:relative}
+.mine-avatar img{width:100%;height:100%;object-fit:cover}
+.mine-avatar .cam{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--p);border:2px solid #fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.mine-info{flex:1;min-width:0;cursor:pointer}
+.mine-name{font-size:18px;font-weight:700}
+.mine-bio{font-size:12px;opacity:.85;margin-top:4px;line-height:16px}
+.mine-edit{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
+.mine-stats{display:flex;gap:12px;margin-top:16px}
+.stat{flex:1;background:var(--card);border-radius:16px;padding:14px 0;text-align:center;box-shadow:0 6px 18px rgba(27,110,156,.08);cursor:pointer;transition:transform .2s}
+.stat:active{transform:scale(.95)}
+.stat b{display:block;font-size:20px;font-weight:700;color:var(--p)}
+.stat span{font-size:12px;color:var(--ink3)}
+.mine-menu{margin-top:16px;background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 6px 18px rgba(27,110,156,.08)}
+.menu-item{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .18s}
+.menu-item:last-child{border-bottom:none}
+.menu-item:active{background:var(--bg)}
+.menu-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--ps)}
+.menu-label{flex:1;font-size:14px;font-weight:500}
+.menu-sub{font-size:12px;color:var(--ink3)}
+.setting-select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:13px;color:var(--ink2);outline:none;cursor:pointer}
+.seller-actions{display:flex;gap:12px;margin-top:14px}
+.seller-actions button{flex:1;height:42px;border-radius:14px;font-size:14px;font-weight:600;transition:transform .18s}
+.seller-actions button:active{transform:scale(.97)}
+.sa-chat{border:1.5px solid var(--p);color:var(--p);background:var(--card)}
+.sa-follow{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;box-shadow:0 4px 12px rgba(27,110,156,.3)}
+.sa-follow.on{background:var(--line);color:var(--ink2);box-shadow:none}
+.modal{position:absolute;inset:0;z-index:60;background:rgba(20,30,45,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal.show{opacity:1;pointer-events:auto}
+.modal-box{width:300px;background:var(--card);border-radius:20px;padding:22px 20px;box-shadow:0 12px 30px rgba(20,30,45,.3);transform:scale(.9);transition:transform .25s}
+.modal.show .modal-box{transform:scale(1)}
+.modal-box h3{font-size:16px;font-weight:700;margin-bottom:16px;text-align:center}
+.modal-field{margin-bottom:14px}
+.modal-field label{font-size:12px;color:var(--ink3);display:block;margin-bottom:6px}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);padding:0 12px;font-size:14px;outline:none}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--p)}
+.modal-field textarea{height:72px;padding:8px 12px;resize:none}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions button{flex:1;height:42px;border-radius:12px;font-size:14px;font-weight:600}
+.modal-actions .cancel{border:1.5px solid var(--line);color:var(--ink2);background:var(--card)}
+.modal-actions .save{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff}
+.emoji-pick{display:flex;flex-wrap:wrap;gap:8px}
+.emoji-btn{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.emoji-btn.on{border-color:var(--p);background:var(--ps)}
+.emoji-btn:active{transform:scale(.9)}
+.pub-image-area{width:100%;height:120px;border-radius:14px;border:2px dashed var(--line);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;overflow:hidden;font-size:14px;color:var(--ink3)}
+.pub-image-area:active{transform:scale(.98)}
+.pub-image-area img{width:100%;height:100%;object-fit:cover}
+.toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:rgba(26,35,50,.92);color:#fff;font-size:13px;padding:10px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap;z-index:70}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.tab-bar{height:62px;flex-shrink:0;display:flex;align-items:flex-end;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(27,110,156,.06);z-index:30}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink3);font-size:11px;font-weight:500;transition:color .22s;height:62px}
+.tab .ico{font-size:22px;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.tab.active{color:var(--p);font-weight:600}
+.tab.active .ico{transform:translateY(-3px)}
+.pub-center{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(27,110,156,.4);flex-shrink:0;transition:transform .2s;align-self:center;cursor:pointer;position:relative;z-index:10}
+.pub-center:active{transform:scale(.88)}
+@media(max-width:460px){body{background:var(--bg)}.phone{width:100vw;height:100vh;border-radius:0;box-shadow:none}}
+.ai-fab{position:absolute;right:16px;bottom:80px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 6px 20px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;z-index:25;transition:transform .2s;animation:aiP 2s infinite}
+.ai-fab:active{transform:scale(.9)}
+@keyframes aiP{0%,100%{box-shadow:0 6px 20px rgba(99,102,241,.4)}50%{box-shadow:0 6px 28px rgba(99,102,241,.6)}}
+.ai-msg{display:flex;padding:8px 16px;gap:8px}
+.ai-msg.u{justify-content:flex-end}
+.ai-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-bb{max-width:80%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:20px}
+.ai-msg.u .ai-bb{background:var(--p);color:#fff;border-bottom-right-radius:4px}
+.ai-msg.b .ai-bb{background:var(--card);color:var(--ink);border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ai-cd{background:var(--bg);border-radius:12px;padding:12px;margin-top:8px;border:1px solid var(--line)}
+.ai-cd-t{font-size:13px;font-weight:700;color:var(--p);margin-bottom:6px}
+.ai-cd-r{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);padding:3px 0}
+.ai-cd-b{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.ai-cd-btn{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.ai-cd-btn.p{background:var(--p);color:#fff}
+.ai-cd-btn.g{border:1px solid var(--p);color:var(--p);background:var(--card)}
+.ai-cd-btn:active{transform:scale(.94)}
+.ai-act{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:999px;background:var(--ps);border:1px solid var(--p);color:var(--p);font-size:12px;font-weight:600;cursor:pointer;margin:4px 2px;transition:all .15s}
+.ai-act:active{transform:scale(.94)}
+.ai-act:hover{background:var(--p);color:#fff}
+.ai-gcard{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);margin:6px 0;cursor:pointer;transition:all .15s}
+.ai-gcard:active{transform:scale(.98)}
+.ai-gcard:hover{border-color:var(--p)}
+.ai-gcard-emoji{font-size:24px;flex-shrink:0}
+.ai-gcard-info{flex:1;min-width:0}
+.ai-gcard-name{font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-gcard-meta{font-size:11px;color:var(--ink3);margin-top:2px}
+.ai-gcard-price{font-size:15px;font-weight:700;color:var(--p);flex-shrink:0}
+.ai-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;background:var(--ps);color:var(--p);margin:2px}
+.ai-dc{font-size:10px;color:var(--ink3);margin-top:6px;text-align:center}
+.ai-qk{display:flex;gap:8px;padding:10px 16px;overflow-x:auto}
+.ai-qk::-webkit-scrollbar{height:0}
+.ai-qk-btn{flex-shrink:0;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:12px;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.ai-qk-btn:active{transform:scale(.94)}
+.ai-tp{display:inline-block;width:6px;height:14px;background:var(--ink3);border-radius:2px;animation:bk 1s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:0}}
+.ai-gs{display:flex;gap:10px;overflow-x:auto;margin-top:8px}
+.ai-gs::-webkit-scrollbar{height:0}
+.ai-gm{width:110px;flex-shrink:0;background:var(--card);border-radius:10px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ai-gm .agc{height:70px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.ai-gm .agm{padding:6px}
+.ai-gm .agn{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-gm .agp{font-size:13px;font-weight:700;color:var(--p)}
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px 30px;background:linear-gradient(160deg,#eef3f8,#e6edf5)}
+.login-logo{width:88px;height:88px;border-radius:24px;background:linear-gradient(135deg,var(--p),var(--pd));display:flex;align-items:center;justify-content:center;font-size:44px;box-shadow:0 12px 30px rgba(27,110,156,.3);margin-bottom:18px}
+.login-title{font-size:26px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--ink3);margin-bottom:32px}
+.login-form{width:100%;display:flex;flex-direction:column;gap:14px}
+.login-field{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;background:var(--card);border-radius:14px;box-shadow:0 4px 12px rgba(27,110,156,.06)}
+.login-field:focus-within{box-shadow:0 0 0 3px rgba(27,110,156,.15)}
+.login-field .ico{font-size:18px;color:var(--ink3)}
+.login-field input{flex:1;border:none;outline:none;background:none;font-size:15px;color:var(--ink)}
+.login-field input::placeholder{color:var(--ink3)}
+.login-btn{height:48px;border-radius:14px;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;font-size:16px;font-weight:700;box-shadow:0 8px 20px rgba(27,110,156,.3);transition:transform .2s}
+.login-btn:active{transform:scale(.97)}
+.login-foot{text-align:center;margin-top:18px;font-size:13px;color:var(--ink3)}
+.login-foot a{color:var(--p);font-weight:600;text-decoration:none}
+.login-err{color:var(--danger);font-size:13px;text-align:center;min-height:18px}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="status-bar"><span id="clock">9:41</span><span style="font-size:9px;color:var(--p);font-weight:700;background:var(--ps);padding:1px 5px;border-radius:4px">v3</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px">WiFi</span><span>🔋</span></div></div>
+<div class="screen">
+<!-- 登录页 -->
+<div class="page active" id="page-login">
+<div class="login-wrap">
+<div class="login-logo">🦊</div>
+<div class="login-title">校园市集</div>
+<div class="login-sub">让闲置流转，让校园更美</div>
+<div class="login-form">
+<div class="login-field"><span class="ico">👤</span><input id="login-user" placeholder="请输入用户ID" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<div class="login-field"><span class="ico">🔒</span><input id="login-pass" type="password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<div class="login-err" id="login-err"></div>
+<button class="login-btn" onclick="doLogin()">登 录</button>
+</div>
+<div class="login-foot">还没有账号？<a href="javascript:goPage('register')">立即注册</a></div>
+</div>
+</div>
+<!-- 注册页 -->
+<div class="page" id="page-register">
+<div class="login-wrap">
+<div class="login-logo">📝</div>
+<div class="login-title">注册账号</div>
+<div class="login-sub">加入校园市集，开启闲置交易</div>
+<div class="login-form">
+<div class="login-field"><span class="ico">👤</span><input id="reg-user" placeholder="设置用户ID" onkeydown="if(event.key==='Enter')doRegister()"></div>
+<div class="login-field"><span class="ico">🔒</span><input id="reg-pass" type="password" placeholder="设置密码" onkeydown="if(event.key==='Enter')doRegister()"></div>
+<div class="login-field"><span class="ico">😊</span><input id="reg-nick" placeholder="昵称（选填）" onkeydown="if(event.key==='Enter')doRegister()"></div>
+<div class="login-err" id="reg-err"></div>
+<button class="login-btn" onclick="doRegister()">注 册</button>
+</div>
+<div class="login-foot">已有账号？<a href="javascript:goPage('login')">返回登录</a></div>
+</div>
+</div>
+<!-- 首页 -->
+<div class="page" id="page-recommend">
+<div class="header"><div class="search-row"><div class="search-box">🔍<input id="search-input" placeholder="搜索二手好物" onfocus="showSearchPanel()" onblur="setTimeout(hideSearchPanel,200)" onkeydown="if(event.key==='Enter'&&this.value.trim())addSearchHistory(this.value.trim())"></div><button class="cat-btn" id="cat-btn" onclick="goPage('category')"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg></button><button class="cancel-btn" id="cancel-search" style="display:none" onclick="cancelSearch()">取消</button></div></div>
+<div class="search-panel" id="search-panel" style="display:none"><div class="search-section"><div class="search-section-head"><span>搜索历史</span><button onclick="clearSearchHistory()">清空</button></div><div class="search-tags" id="search-history"></div></div><div class="search-section"><div class="search-section-head"><span>热门搜索</span></div><div class="search-tags" id="hot-search"></div></div></div>
+<div class="scroll" id="recommend-scroll"><div class="goods-grid" id="goods-grid"></div><div class="list-end">没有更多了 ~</div></div>
+<button class="back-top" id="back-top" onclick="document.getElementById('recommend-scroll').scrollTo({top:0,behavior:'smooth'})">↑</button>
+</div>
+<!-- 分类筛选 -->
+<div class="page" id="page-category">
+<div class="header"><button class="back-btn" onclick="goBack()">‹</button><h1>分类筛选</h1></div>
+<div class="scroll" id="category-scroll">
+<div class="filter-group"><div class="group-head" onclick="toggleFold(this)"><span class="group-index">1</span><h3>类别</h3><span class="group-hint">可多选</span><span class="fold-arrow">▼</span></div><div class="chip-grid" id="f-cate"></div></div>
+<div class="filter-group"><div class="group-head" onclick="toggleFold(this)"><span class="group-index">2</span><h3>价格区间</h3><span class="group-hint">单选</span><span class="fold-arrow">▼</span></div><div class="chip-grid" id="f-price"></div></div>
+<div class="filter-group"><div class="group-head" onclick="toggleFold(this)"><span class="group-index">3</span><h3>地区</h3><span class="group-hint">可多选</span><span class="fold-arrow">▼</span></div><div class="chip-grid" id="f-region"></div></div>
+<div class="filter-group"><div class="group-head" onclick="toggleFold(this)"><span class="group-index">4</span><h3>交易类型</h3><span class="group-hint">单选</span><span class="fold-arrow">▼</span></div><div class="chip-grid" id="f-type"></div></div>
+<div style="display:flex;align-items:center;padding:6px 4px 12px"><b style="font-size:16px">商品列表</b><span style="margin-left:auto;font-size:12px;color:var(--ink3)" id="cat-count"></span></div>
+<div class="goods-grid" id="category-goods"></div>
+</div>
+<div class="filter-footer"><button class="btn-ghost" onclick="resetFilter()">重置</button><button class="btn-primary" onclick="confirmFilter()">确定</button></div>
+</div>
+<!-- 商品详情 -->
+<div class="page" id="page-detail">
+<div class="header"><button class="back-btn" onclick="goBack()">‹</button><h1>商品详情</h1></div>
+<div class="scroll" id="detail-scroll">
+<div class="seller-row" style="cursor:pointer" id="d-seller-row"><div class="avatar-circle" id="d-seller-avatar" style="width:44px;height:44px"></div><div style="flex:1"><div id="d-seller-name" style="font-size:15px;font-weight:700"></div><div id="d-seller-time" style="font-size:12px;color:var(--ink3);margin-top:2px"></div></div><span style="color:var(--ink3);font-size:13px">查看主页 ›</span></div>
+<div class="detail-cover" id="d-cover"></div>
+<div class="info-card"><h3>简介</h3><div id="d-desc" style="font-size:13px;color:var(--ink2);line-height:22px;margin-top:8px"></div></div>
+<div class="info-card"><h3>标签</h3><div class="tag-row" id="d-tags"></div></div>
+<div class="info-card"><div style="display:flex;align-items:center"><h3>商品评论</h3><span style="margin-left:auto;font-size:12px;color:var(--ink3)" id="d-comment-count"></span></div><div id="d-comments"></div></div>
+<div class="info-card"><h3>相似推荐</h3><div style="position:relative;margin-top:12px"><button class="sim-arrow left" onclick="scrollSimilar(-150)">‹</button><div class="similar-scroll" id="d-similar"></div><button class="sim-arrow right" onclick="scrollSimilar(150)">›</button></div></div>
+<div style="height:20px"></div>
+</div>
+<div class="detail-footer" id="detail-footer"><button class="fav-btn" id="fav-btn" onclick="toggleFav()">🤍</button><button class="fav-btn" id="edit-goods-btn" onclick="openEditGoods()" style="display:none">✏️</button><button class="fav-btn" onclick="askAIAboutGoods()" style="font-size:18px">🤖</button><button id="buy-btn" onclick="buyGoods()" style="height:40px;padding:0 18px;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;font-size:14px;font-weight:600;flex-shrink:0;cursor:pointer">购买</button><input id="comment-input" placeholder="说点什么…" onkeydown="if(event.key==='Enter')sendComment()"><button class="send-btn" onclick="sendComment()">发送</button></div>
+</div>
+<!-- 圈子 -->
+<div class="page" id="page-circle"><div class="header"><h1>圈子</h1><span class="sub">我关注的卖家</span></div><div class="scroll" id="circle-scroll"></div><button class="back-top" id="circle-back-top" onclick="document.getElementById('circle-scroll').scrollTo({top:0,behavior:'smooth'})">↑</button></div>
+<!-- 消息 -->
+<div class="page" id="page-message"><div class="header"><h1>消息</h1></div><div class="scroll" id="message-scroll"></div></div>
+<!-- 聊天 -->
+<div class="page" id="page-chat">
+<div class="header"><button class="back-btn" onclick="goBack()">‹</button><div class="avatar-circle" id="chat-avatar" style="width:34px;height:34px"></div><h1 id="chat-name" style="font-size:18px;flex:1"></h1><button onclick="showChatMore()" style="font-size:20px;color:var(--ink);padding:0 8px;flex-shrink:0">⋮</button></div>
+<div class="scroll" id="chat-scroll" style="padding:8px 0"></div>
+<div class="detail-footer" id="chat-footer"><input id="chat-input" placeholder="输入消息…" onkeydown="if(event.key==='Enter')sendChat()"><button class="send-btn" onclick="sendChat()">发送</button></div>
+</div>
+<!-- 我的 -->
+<div class="page" id="page-mine">
+<div class="scroll" style="padding:18px">
+<div class="mine-profile">
+<div class="mine-avatar" id="mine-avatar" onclick="document.getElementById('avatar-file').click()">🦊<div class="cam">📷</div></div>
+<input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+<div class="mine-info" onclick="openEdit()"><div class="mine-name" id="mine-name">林小渡</div><div class="mine-bio" id="mine-bio">热爱生活，闲置回血中～</div></div>
+<button class="mine-edit" onclick="openEdit()">✎</button>
+</div>
+<div class="mine-stats">
+<div class="stat" onclick="goPage('published')"><b id="st-pub">3</b><span>发布</span></div>
+<div class="stat" onclick="goPage('favorites')"><b id="st-fav">3</b><span>收藏</span></div>
+<div class="stat" onclick="goPage('follows')"><b id="st-fol">5</b><span>关注</span></div>
+</div>
+<div class="mine-menu" id="mine-menu"></div>
+</div>
+</div>
+<!-- 我的发布 -->
+<div class="page" id="page-published"><div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>我的发布</h1></div><div class="scroll"><div class="goods-grid" id="published-grid"></div><div class="list-end" id="published-end"></div></div></div>
+<!-- 我的收藏 -->
+<div class="page" id="page-favorites"><div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>我的收藏</h1></div><div class="scroll"><div class="goods-grid" id="favorites-grid"></div><div class="list-end" id="favorites-end"></div></div></div>
+<!-- 卖家主页 -->
+<div class="page" id="page-seller">
+<div class="header"><button class="back-btn" onclick="goBack()">‹</button><h1 id="seller-title">卖家主页</h1></div>
+<div class="scroll" style="padding:18px">
+<div class="mine-profile" id="seller-profile"></div>
+<div class="seller-actions" id="seller-actions"></div>
+<div style="margin-top:16px;font-size:16px;font-weight:700;padding:4px 0">TA的商品</div>
+<div class="goods-grid" id="seller-goods"></div>
+</div>
+</div>
+<!-- 我的关注 -->
+<div class="page" id="page-follows"><div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>我的关注</h1></div><div class="scroll" id="follows-scroll"></div></div>
+<!-- 历史订单 -->
+<div class="page" id="page-orders">
+<div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>历史订单</h1></div>
+<div class="scroll" id="orders-scroll" style="padding-top:6px">
+<div style="display:flex;gap:8px;margin:4px 0 12px">
+<button id="otab-bought" onclick="switchOrderTab('bought')" style="flex:1;height:36px;border-radius:12px;font-size:13px;font-weight:600;border:1.5px solid var(--p);background:var(--ps);color:var(--p);cursor:pointer">我买到的</button>
+<button id="otab-sold" onclick="switchOrderTab('sold')" style="flex:1;height:36px;border-radius:12px;font-size:13px;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--ink3);cursor:pointer">我卖出的</button>
+</div>
+<div class="goods-grid" id="orders-grid"></div>
+<div class="list-end" id="orders-end"></div>
+</div>
+</div>
+<!-- 设置 -->
+<div class="page" id="page-settings"><div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>设置</h1></div><div class="scroll" style="padding:18px"><div class="mine-menu" id="settings-menu"></div></div></div>
+<!-- 我的评价 -->
+<div class="page" id="page-reviews"><div class="header"><button class="back-btn" onclick="goPage('mine')">‹</button><h1>我的评价</h1></div><div class="scroll" id="reviews-scroll"></div></div>
+<!-- 发布商品 -->
+<div class="page" id="page-publish">
+<div class="header"><button class="back-btn" onclick="goBack()">‹</button><h1>发布商品</h1></div>
+<div class="scroll" style="padding:18px">
+<button class="btn-primary" style="width:100%;margin-bottom:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 6px 18px rgba(99,102,241,.3)" onclick="aiHelpWrite()">🤖 AI帮我写（识图生成标题/描述/价格/标签）</button>
+<div class="info-card">
+<div class="modal-field"><label>商品图片</label><div class="pub-image-area" id="pub-image-area" onclick="document.getElementById('pub-image-file').click()"><span id="pub-image-text">📷 点击上传图片</span></div><input type="file" id="pub-image-file" accept="image/*" style="display:none" onchange="uploadPubImage(this)"></div><div class="modal-field"><label>或选择图标</label><div class="emoji-pick" id="pub-emoji-pick"></div></div>
+<div class="modal-field"><label>商品名称</label><input id="pub-name" maxlength="20" placeholder="请输入商品名称"></div>
+<div class="modal-field"><label>价格（¥）</label><input id="pub-price" type="number" placeholder="请输入价格"></div>
+<div class="modal-field"><label>类别</label><select id="pub-cate"></select></div>
+<div class="modal-field"><label>损耗程度</label><select id="pub-cond"></select></div>
+<div class="modal-field"><label>地区</label><select id="pub-region"></select></div>
+<div class="modal-field"><label>交易类型</label><select id="pub-type"></select></div>
+<div class="modal-field"><label>商品描述</label><textarea id="pub-desc" maxlength="100" placeholder="描述一下你的商品"></textarea></div>
+</div>
+<button class="btn-primary" style="width:100%;margin-top:14px" onclick="publishGoods()">发布</button>
+</div>
+</div>
+<!-- 编辑资料弹窗 -->
+<div class="modal" id="edit-modal" onclick="if(event.target===this)closeEdit()">
+<div class="modal-box"><h3>编辑个人资料</h3><div class="modal-field"><label>昵称</label><input id="edit-name" maxlength="12"></div><div class="modal-field"><label>个人简介</label><input id="edit-bio" maxlength="30"></div><div class="modal-actions"><button class="cancel" onclick="closeEdit()">取消</button><button class="save" onclick="saveEdit()">保存</button></div></div>
+</div>
+<!-- 编辑商品弹窗 -->
+<div class="modal" id="edit-goods-modal" onclick="if(event.target===this)closeEditGoods()">
+<div class="modal-box"><h3>编辑商品</h3><div class="modal-field"><label>商品名称</label><input id="eg-name" maxlength="20"></div><div class="modal-field"><label>价格（¥）</label><input id="eg-price" type="number"></div><div class="modal-field"><label>商品描述</label><input id="eg-desc" maxlength="100"></div><div class="modal-actions"><button class="cancel" onclick="closeEditGoods()">取消</button><button class="save" onclick="saveEditGoods()">保存</button></div></div>
+</div>
+<div class="page" id="page-ai"><div class="header"><button class="back-btn" onclick="goBack()">‹</button><h1>🤖 AI助手小集</h1></div><div class="scroll" id="ai-scroll" style="padding:0"></div><div class="ai-qk" id="ai-quick"><button class="ai-qk-btn" onclick="aiQuick('estimate')">💰智能估价</button><button class="ai-qk-btn" onclick="aiQuick('search')">🔍帮我找货</button><button class="ai-qk-btn" onclick="aiQuick('inspect')">🛡️验货防骗</button><button class="ai-qk-btn" onclick="aiQuick('rule')">📋交易规则</button><button class="ai-qk-btn" onclick="aiQuick('copywrite')">✍️帮我写文案</button><button class="ai-qk-btn" onclick="aiQuick('precheck')">⚠️违规预检</button></div><div class="detail-footer"><input id="ai-input" placeholder="问小集任何问题…" onkeydown="if(event.key==='Enter')sendAIMsg()"><button class="send-btn" onclick="sendAIMsg()">发送</button></div></div>
+<div class="ai-fab" id="ai-fab" onclick="openAIChat()" style="display:none">🤖</div>
+<div class="toast" id="toast"></div>
+</div>
+<nav class="tab-bar" id="tab-bar" style="display:none">
+<button class="tab active" data-page="recommend" onclick="goPage('recommend')"><span class="ico">🏠</span>推荐</button>
+<button class="tab" data-page="circle" onclick="goPage('circle')"><span class="ico">👥</span>圈子</button>
+<button class="pub-center" onclick="goPage('publish')">＋</button>
+<button class="tab" data-page="message" onclick="goPage('message')"><span class="ico">💬</span>消息</button>
+<button class="tab" data-page="mine" onclick="goPage('mine')"><span class="ico">👤</span>我的</button>
+</nav>
+</div>
+<script>
+var GRAD=["linear-gradient(135deg,#667eea,#764ba2)","linear-gradient(135deg,#f093fb,#f5576c)","linear-gradient(135deg,#4facfe,#00f2fe)","linear-gradient(135deg,#43e97b,#38f9d7)","linear-gradient(135deg,#fa709a,#fee140)","linear-gradient(135deg,#30cfd0,#330867)","linear-gradient(135deg,#a8edea,#fed6e2)","linear-gradient(135deg,#ff9a9e,#fecfef)","linear-gradient(135deg,#5ee7df,#b490ca)","linear-gradient(135deg,#f6d365,#fda085)"];
+function G(i){return GRAD[i%10]}
+var API_BASE=location.protocol==='file:'?'http://localhost:3000':'';
+var APP_TOKEN='dev-token';
+function api(url,opts){opts=opts||{};opts.headers=opts.headers||{};opts.headers['x-app-token']=APP_TOKEN;return fetch(API_BASE+url,opts)}
+var ws=null;
+function connectWS(){if(ws)ws.close();try{ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host);ws.onopen=function(){ws.send(JSON.stringify({type:'auth',userId:USER_ID}))};ws.onmessage=function(e){try{var d=JSON.parse(e.data);if(d.type==='goods_new'){api('/api/goods').then(function(r){return r.json()}).then(function(dd){if(dd.code===0){goods=dd.data.map(mapGoods);renderGoods()}})}if(d.type==='chat_new'){loadUserData()}if(d.type==='order_new'){if(d.data&&d.data.sellerId===USER_ID){toast("🎉 您的商品「"+(d.data.goodsName||"")+"」被买走啦");loadOrders()}loadUserData()}}catch(ex){}};ws.onclose=function(){ws=null}}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function mapGoods(sg){return{id:sg.id,name:sg.name,price:sg.price,emoji:sg.emoji||'📦',grad:sg.grad||0,seller:sg.seller,sa:sg.sa||sg.sellerAvatar||'🧑',sg:sg.sg!==undefined?sg.sg:(sg.sellerGrad||0),time:sg.time||sg.publishTime||'刚刚',desc:sg.desc||'',cond:sg.cond||sg.condition||'九成新',cate:sg.cate||sg.category||'其他',region:sg.region||'一期',type:sg.type||sg.tradeType||'出售',image:sg.image||null,_comments:sg._comments}}
+var USER_ID='linxiaodu';
+var goods=[
+{id:1,name:"高等数学第七版",price:15,emoji:"📚",grad:0,seller:"陈同学",sa:"🧑",sg:3,time:"2小时前",desc:"高等数学第七版同济版，笔记不多，封面整洁，考研复习利器，可面交或寄送。",cond:"八成新",cate:"书籍",region:"一期",type:"出售"},
+{id:2,name:"山地自行车",price:280,emoji:"🚲",grad:1,seller:"老张学长",sa:"👨",sg:5,time:"5小时前",desc:"捷安特山地车，27.5轮径，变速顺畅，毕业出，支持试骑，东校区可自提。",cond:"九成新",cate:"交通工具",region:"东校区",type:"出售"},
+{id:3,name:"iPad Air 64G",price:1200,emoji:"📱",grad:2,seller:"阿杰",sa:"🧑‍🎓",sg:7,time:"1天前",desc:"iPad Air 第三代64G WiFi版，无拆无修，屏幕完美，配原装充电器。",cond:"九成新",cate:"电子数码",region:"澎湖苑",type:"出售"},
+{id:4,name:"羽毛球拍尤尼克斯",price:90,emoji:"🏸",grad:3,seller:"小美",sa:"👩",sg:0,time:"3小时前",desc:"尤尼克斯天斧88，线还新，打感扎实，送拍包，二期体育馆可试打。",cond:"八成新",cate:"运动器材",region:"二期",type:"出售"},
+{id:5,name:"小米台灯护眼",price:35,emoji:"💡",grad:4,seller:"苏苏",sa:"👧",sg:4,time:"6小时前",desc:"小米米家台灯，可调色温亮度，USB供电，宿舍神器，几乎没用过。",cond:"九成新",cate:"生活用品",region:"一期",type:"出售"},
+{id:6,name:"兰蔻小样套装",price:60,emoji:"💄",grad:5,seller:"小鹿",sa:"🦌",sg:6,time:"8小时前",desc:"兰蔻小样7件套，精华+眼霜+面霜，正品专柜赠品，未拆封。",cond:"全新",cate:"美妆护肤",region:"二期",type:"出售"},
+{id:7,name:"手帐本+胶带",price:25,emoji:"📔",grad:6,seller:"苏苏",sa:"👧",sg:4,time:"4小时前",desc:"tn手帐本一本+和纸胶带十卷，记录生活好伙伴，文具控入。",cond:"全新",cate:"文创文具",region:"一期",type:"出售"},
+{id:8,name:"民谣吉他41寸",price:360,emoji:"🎸",grad:7,seller:"阿杰",sa:"🧑‍🎓",sg:7,time:"2天前",desc:"卡马D1C 41寸民谣吉他，音色温暖，送琴包+变调夹+拨片。",cond:"八成新",cate:"乐器",region:"东校区",type:"出售"},
+{id:9,name:"自热火锅整箱",price:45,emoji:"🍜",grad:8,seller:"小美",sa:"👩",sg:0,time:"1天前",desc:"自热火锅整箱12盒，多种口味，期末囤货出，日期新鲜。",cond:"全新",cate:"食品",region:"二期",type:"出售"},
+{id:10,name:"机械键盘茶轴",price:150,emoji:"⌨",grad:9,seller:"陈同学",sa:"🧑",sg:3,time:"7小时前",desc:"IKBC茶轴机械键盘，PBT键帽，手感温润，无打油，写代码利器。",cond:"九成新",cate:"电子数码",region:"一期",type:"出售"},
+{id:11,name:"考研政治资料",price:20,emoji:"📖",grad:0,seller:"老张学长",sa:"👨",sg:5,time:"10小时前",desc:"肖秀荣全套+徐涛笔记，已上岸，资料完整，传给下一届。",cond:"七成新",cate:"书籍",region:"东校区",type:"出售"},
+{id:12,name:"滑板陆地冲浪",price:220,emoji:"🛹",grad:1,seller:"小鹿",sa:"🦌",sg:6,time:"5小时前",desc:"YOW陆地冲浪板，桥灵活，刷街利器，玩了几次。",cond:"八成新",cate:"运动器材",region:"澎湖苑",type:"出售"},
+{id:13,name:"空气炸锅3.5L",price:130,emoji:"🍳",grad:2,seller:"苏苏",sa:"👧",sg:4,time:"1天前",desc:"美的空气炸锅3.5L，无油低脂，做鸡翅薯条一绝，配件齐。",cond:"九成新",cate:"生活用品",region:"一期",type:"出售"},
+{id:14,name:"JK制服格子裙",price:75,emoji:"👗",grad:3,seller:"小美",sa:"👩",sg:0,time:"3小时前",desc:"中牌JK制服格子裙M码，穿过两次，无污渍，配领结。",cond:"九成新",cate:"生活用品",region:"二期",type:"出售"},
+{id:15,name:"索尼降噪耳机",price:480,emoji:"🎧",grad:4,seller:"阿杰",sa:"🧑‍🎓",sg:7,time:"6小时前",desc:"索尼WH-1000XM3降噪耳机，降噪一绝，耳罩无磨损，配原装盒线。",cond:"八成新",cate:"电子数码",region:"东校区",type:"出售"},
+{id:16,name:"尤克里里入门",price:110,emoji:"🪕",grad:5,seller:"小鹿",sa:"🦌",sg:6,time:"4小时前",desc:"歌瑞拉23寸尤克里里，桃花心木，音色亮，送教程书+调音器。",cond:"九成新",cate:"乐器",region:"澎湖苑",type:"长期租借"},
+{id:17,name:"咖啡手冲套装",price:95,emoji:"☕",grad:6,seller:"陈同学",sa:"🧑",sg:3,time:"8小时前",desc:"手冲咖啡套装：滤杯+分享壶+电子秤+滤纸，宿舍手冲入门全套。",cond:"九成新",cate:"生活用品",region:"一期",type:"出售"},
+{id:18,name:"乐高街景散件",price:200,emoji:"🧩",grad:7,seller:"苏苏",sa:"👧",sg:4,time:"2天前",desc:"乐高街景系列散件约800块，含人仔6个，说明书电子版。",cond:"有使用痕迹",cate:"文创文具",region:"二期",type:"出售"},
+{id:19,name:"电钢琴88键",price:880,emoji:"🎹",grad:8,seller:"老张学长",sa:"👨",sg:5,time:"3天前",desc:"罗兰FP30电钢琴88键全配重，带琴架+踏板+耳机，毕业出。",cond:"九成新",cate:"乐器",region:"东校区",type:"出售"},
+{id:20,name:"露营天幕帐篷",price:260,emoji:"⛺",grad:9,seller:"小美",sa:"👩",sg:0,time:"1天前",desc:"挪客天幕3x4米+地钉风绳，露营遮阳利器，用两次。",cond:"九成新",cate:"运动器材",region:"澎湖苑",type:"短期租借"}
+];
+var circleData=[];
+var msgData=[];
+var commentData=[
+{name:"陈同学",avatar:"🧑",grad:3,content:"还在吗？能小刀一点吗～",time:"1小时前",isSeller:0},
+{name:"苏苏",avatar:"👧",grad:4,content:"可以小刀5块，面交的话",time:"50分钟前",isSeller:1},
+{name:"小鹿",avatar:"🦌",grad:6,content:"请问东校区可以送过来吗",time:"30分钟前",isSeller:0},
+{name:"苏苏",avatar:"👧",grad:4,content:"东校区有点远，一期门口可以吗",time:"25分钟前",isSeller:1},
+{name:"阿杰",avatar:"🧑‍🎓",grad:7,content:"成色怎么样，有细节图吗",time:"10分钟前",isSeller:0}
+];
+var reviewsData=[];
+var user={nickName:"",bio:"这个人很懒，什么都没留下～",avatar:null,published:[],favorites:[]};
+var followedSellers=[];
+var CATS=["书籍","交通工具","电子数码","运动器材","生活用品","美妆护肤","文创文具","乐器","食品","其他"];
+var PRICES=["0-30","30-50","50-100","100-200","200-500","500-1000","1000+"];
+var REGIONS=["一期","二期","东校区","澎湖苑"];
+var TYPES=["出售","长期租借","短期租借"];
+var CONDS=["全新","九成新","八成新","七成新","有使用痕迹"];
+var EMOJIS=["📦","📚","📱","🚲","🎸","💻","🎧","👗","💡","☕","🎮","🍳"];
+var MENU=[{icon:"📦",label:"我的发布",sub:"",page:"published"},{icon:"♡",label:"我的收藏",sub:"",page:"favorites"},{icon:"👥",label:"我的关注",sub:"",page:"follows"},{icon:"📜",label:"历史订单",sub:"买到/卖出",page:"orders"},{icon:"⭐",label:"我的评价",sub:"",page:"reviews"},{icon:"⚙️",label:"设置",sub:"",page:"settings"}];
+var settingsData=[{icon:"🔔",label:"通知设置",options:["开启消息提醒","关闭通知"],value:0},{icon:"🔒",label:"隐私设置",options:["所有人可见","仅关注的人","仅自己可见"],value:0},{icon:"🌐",label:"语言",options:["简体中文","English"],value:0},{icon:"🎨",label:"主题模式",options:["浅色模式","深色模式"],value:0},{icon:"💧",label:"清除缓存",sub:"0.0MB",action:"cache"},{icon:"📖",label:"使用帮助",action:"help"},{icon:"ℹ️",label:"关于校园市集",sub:"v1.0.0",action:"about"},{icon:"🚪",label:"退出登录",action:"logout"}];
+var followsData=[{name:"陈同学",avatar:"🧑",grad:3,bio:"出闲置教材和数码",goods:3},{name:"苏苏",avatar:"👧",grad:4,bio:"手账文具杂货铺",goods:5},{name:"老张学长",avatar:"👨",grad:5,bio:"毕业大甩卖",goods:4},{name:"小鹿",avatar:"🦌",grad:6,bio:"舞蹈服饰回血",goods:2},{name:"阿杰",avatar:"🧑‍🎓",grad:7,bio:"数码乐器转让",goods:3}];
+
+var currentPage="recommend",navStack=[],currentGoods=null,currentChat=null,currentSeller=null,detailIsOwn=false,noPush=false,selCate=[],selPrice=[],selRegion=[],selType=[],pubEmoji="📦",pubImage=null;
+
+function $(id){return document.getElementById(id)}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("show")},2000)}
+function goPage(name){
+var main=["recommend","circle","message","mine"];
+if(main.indexOf(name)>=0){navStack=[]}else if(currentPage!==name&&!noPush){navStack.push({p:currentPage,g:currentGoods?currentGoods.id:0,d:detailIsOwn})}
+currentPage=name;
+var pages=document.querySelectorAll(".page");
+for(var i=0;i<pages.length;i++)pages[i].classList.remove("active");
+$("page-"+name).classList.add("active");
+$("tab-bar").style.display=main.indexOf(name)>=0?"flex":"none";
+$("ai-fab").style.display=(name==="login"||name==="register")?"none":"flex";
+var tabs=document.querySelectorAll(".tab");
+for(var j=0;j<tabs.length;j++)tabs[j].classList.toggle("active",tabs[j].getAttribute("data-page")===name);
+ if(name==="published")renderPublished();if(name==="message")renderMessages();
+ if(name==="orders")loadOrders();
+ if(name==="mine")renderMine();
+if(name==="favorites")renderFavorites();
+if(name==="follows")renderFollows();
+if(name==="settings")renderSettings();
+if(name==="reviews")renderReviews();
+if(name==="publish")initPublish();
+}
+function goBack(){if(navStack.length>0){var prev=navStack.pop();noPush=true;if(typeof prev==='object'&&prev.p==='detail'&&prev.g){openDetail(prev.g,prev.d)}else{goPage(typeof prev==='object'?prev.p:prev)}noPush=false}else{goPage("recommend")}}
+
+function goodsCardHTML(g,own){var cv=g.image?'<div class="goods-cover" style="background-image:url('+esc(g.image)+');background-size:cover;background-position:center"></div>':'<div class="goods-cover" style="background:'+G(g.grad)+'">'+esc(g.emoji)+'</div>';return '<div class="goods-card" onclick="openDetail('+g.id+(own?',1':'')+')">'+cv+'<div class="goods-meta"><div class="goods-name">'+esc(g.name)+'</div><div class="goods-price"><small>¥</small>'+g.price+'</div></div></div>'}
+var searchHistory=[];var hotSearch=["教材","自行车","键盘","吉他","耳机","台灯","考研","JK"];
+function showSearchPanel(){$("search-panel").style.display="block";$("cat-btn").style.display="none";$("cancel-search").style.display="block";renderSearchHistory();renderHotSearch()}
+function hideSearchPanel(){$("search-panel").style.display="none";$("cat-btn").style.display="flex";$("cancel-search").style.display="none"}
+function cancelSearch(){$("search-input").value="";renderGoods();hideSearchPanel();$("search-input").blur()}
+function renderSearchHistory(){var html=searchHistory.length?searchHistory.map(function(h){return '<button class="search-tag" data-kw="'+esc(h)+'">'+esc(h)+'</button>'}).join(''):'<span style="font-size:12px;color:var(--ink3)">暂无搜索历史</span>';$("search-history").innerHTML=html;var bs=$("search-history").querySelectorAll("[data-kw]");for(var i=0;i<bs.length;i++){(function(b){b.onclick=function(){doSearch(b.getAttribute("data-kw"))}})(bs[i])}}
+function renderHotSearch(){$("hot-search").innerHTML=hotSearch.map(function(h){return '<button class="search-tag" onclick="doSearch(\''+h+'\')">'+h+'</button>'}).join("")}
+function doSearch(kw){$("search-input").value=kw;renderGoods();hideSearchPanel();addSearchHistory(kw)}
+function addSearchHistory(kw){var i=searchHistory.indexOf(kw);if(i>=0)searchHistory.splice(i,1);searchHistory.unshift(kw);if(searchHistory.length>8)searchHistory.pop()}
+function clearSearchHistory(){searchHistory=[];renderSearchHistory()}
+function renderGoods(){var kw=$("search-input").value.trim();if(!kw){$("goods-grid").innerHTML=goods.map(function(g){return goodsCardHTML(g)}).join("");return}var list=goods.filter(function(g){return g.name.indexOf(kw)>=0||g.desc.indexOf(kw)>=0||g.seller.indexOf(kw)>=0||g.cate.indexOf(kw)>=0});list.sort(function(a,b){var as=(a.name.indexOf(kw)>=0?2:0)+(a.desc.indexOf(kw)>=0?1:0);var bs=(b.name.indexOf(kw)>=0?2:0)+(b.desc.indexOf(kw)>=0?1:0);return bs-as});$("goods-grid").innerHTML=list.length?list.map(function(g){return goodsCardHTML(g)}).join(''):'<div style="text-align:center;padding:40px 0;color:var(--ink3);grid-column:span 2">没有找到相关商品</div>'}
+
+function openDetail(id,own){
+currentGoods=goods.filter(function(g){return g.id===id})[0];
+if(!currentGoods)return;
+detailIsOwn=!!own;
+var g=currentGoods;
+goPage("detail");
+$("detail-scroll").scrollTop=0;
+var sn=detailIsOwn?user.nickName:g.seller;
+var sa=detailIsOwn?"🦊":g.sa;
+var sg=detailIsOwn?0:g.sg;
+var saEl=$("d-seller-avatar");
+if(detailIsOwn&&user.avatar){saEl.innerHTML='<img src="'+user.avatar+'">';saEl.style.background="#fff"}else{saEl.style.background=G(sg);saEl.textContent=sa}
+$("d-seller-name").textContent=sn;
+$("d-seller-time").textContent=g.time;
+$("d-seller-row").onclick=function(){if(detailIsOwn)goPage("mine");else openSeller(g.seller,g.sa,g.sg)};
+if(g.image){$("d-cover").style.backgroundImage="url("+g.image+")";$("d-cover").style.backgroundSize="cover";$("d-cover").style.backgroundPosition="center";$("d-cover").textContent=""}else{$("d-cover").style.background=G(g.grad);$("d-cover").textContent=g.emoji}
+$("d-desc").textContent=g.desc;
+$("d-tags").innerHTML='<div class="tag price"><small>¥</small>'+g.price+'</div><div class="tag cond">📉'+esc(g.cond)+'</div><div class="tag cate">🏷️'+esc(g.cate)+'</div>';
+renderComments();
+renderSimilar();
+updateFavBtn();
+ $("edit-goods-btn").style.display=detailIsOwn?"flex":"none";
+ $("buy-btn").style.display=detailIsOwn?"none":"flex";
+}
+function renderComments(){var g=currentGoods;var list=g._comments||commentData;var sn=detailIsOwn?user.nickName:g.seller;$("d-comment-count").textContent=list.length+"条";$("d-comments").innerHTML=list.map(function(c,idx){var sv=c.name===sn;var canDel=c.name==="我"||c.name===user.nickName;var cid=c.id!==undefined?c.id:idx;return '<div class="comment-item"><div class="c-avatar" style="background:'+G(c.grad)+'">'+esc(c.avatar)+'</div><div class="c-info"><div class="c-name">'+esc(c.name)+(sv?'<span class="seller-tag">卖家</span>':'')+'</div><div class="c-text">'+esc(c.content)+'</div><div class="c-time">'+esc(c.time)+(canDel?' <span style="color:var(--danger);font-weight:600;cursor:pointer" onclick="deleteComment('+cid+')">删除</span>':'')+'</div></div></div>'}).join("")}
+function deleteComment(cid){var g=currentGoods;if(!g._comments)g._comments=commentData.slice();var idx=g._comments.findIndex(function(c){return(c.id!==undefined?c.id:-1)===cid});if(idx<0){idx=cid}g._comments.splice(idx,1);renderComments();toast("评论已删除");api("/api/goods/"+g.id+"/comments/"+cid,{method:"DELETE"}).then(function(r){return r.json()}).catch(function(){})}
+function sendComment(){var inp=$("comment-input");var t=inp.value.trim();if(!t){toast("请输入评论内容");return}if(!currentGoods._comments)currentGoods._comments=commentData.slice();var c={id:Date.now(),name:detailIsOwn?user.nickName:"我",avatar:"🦊",grad:0,content:t,time:"刚刚",isSeller:detailIsOwn?1:0};currentGoods._comments.push(c);inp.value="";renderComments();toast("评论已发送");api("/api/goods/"+currentGoods.id+"/comments",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:c.name,avatar:c.avatar,grad:c.grad,content:c.content,isSeller:c.isSeller})}).then(function(r){return r.json()}).then(function(d){if(d.code===0){c.id=d.data.id}}).catch(function(){})}
+function renderSimilar(){var g=currentGoods;var same=goods.filter(function(x){return x.id!==g.id&&x.cate===g.cate});var other=goods.filter(function(x){return x.id!==g.id&&x.cate!==g.cate});var list=same.concat(other).slice(0,6);$("d-similar").innerHTML=list.map(function(x){return '<div class="similar-card" onclick="openDetail('+x.id+')"><div class="sc-cover" style="background:'+G(x.grad)+'">'+esc(x.emoji)+'</div><div class="sc-meta"><div class="sc-name">'+esc(x.name)+'</div><div class="sc-price">¥'+x.price+'</div></div></div>'}).join("")}
+function scrollSimilar(d){$("d-similar").scrollBy({left:d,behavior:'smooth'})}
+function toggleFav(){var id=currentGoods.id;var i=user.favorites.indexOf(id);if(i>=0){user.favorites.splice(i,1);toast("已取消收藏");api("/api/user/"+USER_ID+"/favorites/"+id,{method:"DELETE"}).catch(function(){})}else{user.favorites.push(id);toast("已加入收藏");api("/api/user/"+USER_ID+"/favorites",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({goodsId:id})}).catch(function(){})}updateFavBtn();renderMine()}
+function updateFavBtn(){var btn=$("fav-btn");var fav=user.favorites.indexOf(currentGoods.id)>=0;btn.textContent=fav?"❤️":"🤍"}
+function openEditGoods(){$("eg-name").value=currentGoods.name;$("eg-price").value=currentGoods.price;$("eg-desc").value=currentGoods.desc;$("edit-goods-modal").classList.add("show")}
+function closeEditGoods(){$("edit-goods-modal").classList.remove("show")}
+function saveEditGoods(){var n=$("eg-name").value.trim(),p=$("eg-price").value.trim(),d=$("eg-desc").value.trim();if(n)currentGoods.name=n;if(p)currentGoods.price=Number(p);if(d)currentGoods.desc=d;closeEditGoods();$("d-desc").textContent=currentGoods.desc;$("d-tags").innerHTML='<div class="tag price"><small>¥</small>'+currentGoods.price+'</div><div class="tag cond">📉'+esc(currentGoods.cond)+'</div><div class="tag cate">🏷️'+esc(currentGoods.cate)+'</div>';toast("商品已修改");renderGoods();renderPublished();api("/api/goods/"+currentGoods.id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n,price:Number(p),desc:d})}).catch(function(){})}
+
+function openSeller(name,avatar,grad){
+currentSeller={name:name,avatar:avatar,grad:grad};
+goPage("seller");
+$("seller-title").textContent=name;
+$("seller-profile").innerHTML='<div class="mine-avatar" style="background:'+G(grad)+'">'+esc(avatar)+'</div><div class="mine-info"><div class="mine-name">'+esc(name)+'</div><div class="mine-bio">校园闲置交易卖家</div></div>';
+renderSellerActions();
+var sg=goods.filter(function(g){return g.seller===name});
+$("seller-goods").innerHTML=sg.length?sg.map(function(g){return goodsCardHTML(g)}).join(''):'<div style="text-align:center;padding:40px 0;color:var(--ink3);grid-column:span 2">TA还没有发布商品</div>';
+}
+function renderSellerActions(){
+var fol=followedSellers.indexOf(currentSeller.name)>=0;
+$("seller-actions").innerHTML='<button class="sa-chat" onclick="chatWithSeller()">💬 私聊</button><button class="sa-follow'+(fol?' on':'')+'" id="follow-btn" onclick="followSeller()">'+(fol?'已关注':'+ 关注')+'</button>';
+}
+function chatWithSeller(){
+var name=currentSeller.name;
+for(var i=0;i<msgData.length;i++){if(msgData[i].name===name){openChat(i);return}}
+msgData.push({name:name,emoji:currentSeller.avatar,grad:currentSeller.grad,badge:0,chats:[]});
+openChat(msgData.length-1);
+}
+function followSeller(){
+var name=currentSeller.name;
+var i=followedSellers.indexOf(name);
+if(i>=0){followedSellers.splice(i,1);toast("已取消关注");api("/api/user/"+USER_ID+"/follows/"+encodeURIComponent(name),{method:"DELETE"}).catch(function(){})}else{followedSellers.push(name);toast("关注成功");api("/api/user/"+USER_ID+"/follows",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sellerName:name})}).catch(function(){})}
+renderSellerActions();
+$("st-fol").textContent=followedSellers.length;
+}
+
+function renderCircle(){$("circle-scroll").innerHTML=circleData.length?circleData.map(function(c){return '<div class="circle-card" onclick="openDetail('+c.gid+')"><div class="circle-head"><div class="avatar-circle" style="width:38px;height:38px;background:'+G(c.ag)+'">'+esc(c.ae)+'</div><div><div style="font-size:14px;font-weight:600">'+esc(c.seller)+'</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">'+esc(c.time)+'</div></div></div><div class="circle-cover" style="background:'+G(c.cg)+'">'+esc(c.ce)+'</div><div class="circle-text">'+esc(c.text)+'</div></div>'}).join(""):'<div style="text-align:center;color:var(--ink3);font-size:14px;padding:60px 0">您还未有关注<br><span style="font-size:12px;color:var(--ink3)">关注喜欢的卖家，即可在此看到他们的动态</span></div>'}
+function renderMessages(){$("message-scroll").innerHTML=msgData.length?msgData.map(function(m,i){var last=m.chats[m.chats.length-1];return '<div class="msg-card" onclick="openChat('+i+')">'+(m.badge?'<div class="msg-badge">'+m.badge+'</div>':'')+'<div class="avatar-circle" style="width:46px;height:46px;background:'+G(m.grad)+'">'+esc(m.emoji)+'</div><div style="flex:1;min-width:0;margin-left:12px"><div style="font-size:14px;font-weight:600">'+esc(m.name)+'</div><div style="font-size:12px;color:var(--ink3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(last?last.t:"")+'</div></div><div style="font-size:11px;color:var(--ink3)">'+esc(last?last.time:"")+'</div></div>'}).join(""):'<div style="text-align:center;color:var(--ink3);font-size:14px;padding:40px 0">暂无消息</div>'}
+function openChat(i){
+currentChat=msgData[i];
+goPage("chat");
+var ca=$("chat-avatar");ca.style.background=G(currentChat.grad);ca.textContent=currentChat.emoji;
+$("chat-name").textContent=currentChat.name;
+currentChat.badge=0;
+renderMessages();
+$("chat-footer").style.display=currentChat.readonly?"none":"flex";
+renderChat();
+}
+function renderChat(){var ro=currentChat.readonly;$("chat-scroll").innerHTML=currentChat.chats.map(function(m){if(ro){return '<div class="chat-msg" style="justify-content:center"><div><div class="chat-bubble" style="background:var(--card);color:var(--ink2);border-radius:14px;text-align:center;max-width:85%;border:1px solid var(--line);box-shadow:0 2px 8px rgba(27,110,156,.06)">'+esc(m.t)+'</div><div class="chat-time" style="text-align:center">'+esc(m.time)+'</div></div></div>'}return '<div class="chat-msg '+(m.me?'me':'other')+'"><div><div class="chat-bubble">'+esc(m.t)+'</div><div class="chat-time">'+esc(m.time)+'</div></div></div>'}).join("");$("chat-scroll").scrollTop=$("chat-scroll").scrollHeight}
+function smartReply(msg){msg=msg.toLowerCase();if(msg.indexOf("你好")>=0||msg.indexOf("在吗")>=0||msg.indexOf("在不在")>=0)return"你好，在的～有什么可以帮你的？";if(msg.indexOf("价格")>=0||msg.indexOf("多少钱")>=0||msg.indexOf("便宜")>=0||msg.indexOf("小刀")>=0)return"价格可以小刀一点，面交的话再优惠5块～";if(msg.indexOf("在哪")>=0||msg.indexOf("地址")>=0||msg.indexOf("位置")>=0||msg.indexOf("哪里")>=0)return"我在一期，可以约一期门口或者图书馆面交～";if(msg.indexOf("什么时候")>=0||msg.indexOf("时间")>=0||msg.indexOf("哪天")>=0)return"明天下午有空，你看几点方便？";if(msg.indexOf("成色")>=0||msg.indexOf("新不新")>=0||msg.indexOf("几成")>=0)return"九成新，几乎没用过，成色很好～";if(msg.indexOf("面交")>=0||msg.indexOf("交易")>=0||msg.indexOf("见面")>=0)return"可以面交，约个时间地点就行～";if(msg.indexOf("包邮")>=0||msg.indexOf("邮寄")>=0||msg.indexOf("快递")>=0)return"包邮的话加5块快递费，或者面交更划算～";if(msg.indexOf("谢谢")>=0||msg.indexOf("感谢")>=0)return"不客气，有问题随时联系我～";if(msg.indexOf("还在")>=0||msg.indexOf("有货")>=0)return"还在的，要的话赶紧哦～";if(msg.indexOf("图")>=0||msg.indexOf("照片")>=0)return"稍等，我拍几张细节图给你看看～";if(msg.indexOf("换")>=0||msg.indexOf("交换")>=0)return"暂时不考虑换，只出售哦～";if(msg.indexOf("怎么")>=0||msg.indexOf("使用")>=0)return"操作很简单的，我可以教你～";var r=["好的，收到～","嗯嗯，没问题","可以的，你看什么时候方便？","哈哈好的","收到，我这边确认一下","行，那就这样说定了～","嗯，有什么问题随时问我"];return r[Math.floor(Math.random()*r.length)]}
+function sendChat(){var inp=$("chat-input");var t=inp.value.trim();if(!t)return;currentChat.chats.push({t:t,me:1,time:"刚刚"});inp.value="";renderChat();var ctx=currentChat.chats.slice(-10).map(function(m){return{role:m.me?"user":"assistant",content:m.t}});api("/api/chat/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:t,context:ctx})}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(d){currentChat.chats.push({t:d.reply||"好的",me:0,time:"刚刚"});renderChat()}).catch(function(){setTimeout(function(){currentChat.chats.push({t:smartReply(t),me:0,time:"刚刚"});renderChat()},800)})}
+function showChatMore(){var m=document.createElement("div");m.id="chat-more";m.style.cssText="position:absolute;inset:0;z-index:60;background:rgba(20,30,45,.45)";m.onclick=function(e){if(e.target===m)m.remove()};var box=document.createElement("div");box.style.cssText="position:absolute;bottom:0;left:0;right:0;background:var(--card);border-radius:20px 20px 0 0;padding:8px 0";var items=["清空聊天记录","举报用户","加入黑名单","取消"];for(var i=0;i<items.length;i++){(function(idx,label){var d=document.createElement("div");d.style.cssText="padding:14px 20px;text-align:center;font-size:15px;"+(idx===items.length-1?"border-top:8px solid var(--bg);font-weight:600;color:var(--ink2)":"");d.textContent=label;d.onclick=function(){m.remove();if(idx===0){currentChat.chats=[];renderChat();toast("聊天记录已清空")}else if(idx===1)toast("已举报用户");else if(idx===2)toast("已加入黑名单")};box.appendChild(d)})(i,items[i])}m.appendChild(box);document.getElementById("page-chat").appendChild(m)}
+
+function toggleFold(h){h.parentElement.classList.toggle("folded")}
+function renderChips(){function mk(arr,sel,multi,key){return arr.map(function(v){return '<button class="chip '+(sel.indexOf(v)>=0?'on':'')+'" onclick="toggleChip(\''+key+'\',\''+v+'\','+multi+')"><span class="dot '+(multi?'sq':'')+'"></span>'+v+'</button>'}).join("")}$("f-cate").innerHTML=mk(CATS,selCate,1,'cate');$("f-price").innerHTML=mk(PRICES,selPrice,0,'price');$("f-region").innerHTML=mk(REGIONS,selRegion,1,'region');$("f-type").innerHTML=mk(TYPES,selType,0,'type');applyFilter()}
+function toggleChip(key,val,multi){if(key==='cate'){var i=selCate.indexOf(val);if(i>=0)selCate.splice(i,1);else selCate.push(val)}else if(key==='price'){selPrice=selPrice[0]===val?[]:[val]}else if(key==='region'){var i=selRegion.indexOf(val);if(i>=0)selRegion.splice(i,1);else selRegion.push(val)}else{selType=selType[0]===val?[]:[val]}renderChips()}
+function inRange(p,r){if(r==="1000+")return p>=1000;var a=parseInt(r);var b=parseInt(r.split("-")[1]);return p>=a&&p<b}
+function applyFilter(){var list=goods.filter(function(g){if(selCate.length&&selCate.indexOf(g.cate)<0)return false;if(selPrice.length&&!inRange(g.price,selPrice[0]))return false;if(selRegion.length&&selRegion.indexOf(g.region)<0)return false;if(selType.length&&selType[0]!==g.type)return false;return true});$("cat-count").textContent="共"+list.length+"件";$("category-goods").innerHTML=list.length?list.map(function(g){return goodsCardHTML(g)}).join(''):'<div style="text-align:center;padding:40px 0;color:var(--ink3)">没有符合条件的商品</div>'}
+function resetFilter(){selCate=[];selPrice=[];selRegion=[];selType=[];renderChips();toast("已重置筛选条件")}
+function confirmFilter(){applyFilter();toast("已为你筛选"+$("category-goods").querySelectorAll(".goods-card").length+"件商品")}
+
+function renderMine(){var av=$("mine-avatar");if(user.avatar){av.innerHTML='<img src="'+esc(user.avatar)+'"><div class="cam">📷</div>'}else{av.innerHTML='🦊<div class="cam">📷</div>'}$("mine-name").textContent=user.nickName||USER_ID;$("mine-bio").textContent=user.bio;$("st-pub").textContent=user.published.length;$("st-fav").textContent=user.favorites.length;$("st-fol").textContent=followedSellers.length;var subs=[user.published.length+"件在售",user.favorites.length+"件",followedSellers.length+"人","查看全部",reviewsData.length+"条评价",""];$("mine-menu").innerHTML=MENU.map(function(m,i){return '<div class="menu-item" onclick="'+(m.page?"goPage('"+m.page+"')":"toast('"+esc(m.label)+"功能开发中')")+'"><div class="menu-ico">'+m.icon+'</div><div class="menu-label">'+esc(m.label)+'</div>'+(subs[i]?'<div class="menu-sub">'+esc(subs[i])+'</div>':'')+'<span style="color:var(--ink3)">›</span></div>'}).join("")}
+function uploadAvatar(input){var f=input.files[0];if(!f)return;input.value='';var r=new FileReader();r.onload=function(e){user.avatar=e.target.result;renderMine();toast("头像已更新");api("/api/user/"+USER_ID,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({avatar:user.avatar})}).catch(function(){})};r.readAsDataURL(f)}
+function openEdit(){$("edit-name").value=user.nickName;$("edit-bio").value=user.bio;$("edit-modal").classList.add("show")}
+function closeEdit(){$("edit-modal").classList.remove("show")}
+function saveEdit(){var n=$("edit-name").value.trim(),b=$("edit-bio").value.trim();if(n)user.nickName=n;user.bio=b||"这个人很懒，什么都没留下～";closeEdit();renderMine();toast("资料已更新");api("/api/user/"+USER_ID,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({nickName:user.nickName,bio:user.bio})}).catch(function(){})}
+
+function renderPublished(){$("published-grid").innerHTML=user.published.map(function(id){var g=goods.filter(function(x){return x.id===id})[0];if(!g)return"";return goodsCardHTML(g,1)}).join("");$("published-end").textContent=user.published.length?"没有更多了~":"你还没有发布商品"}
+function renderFavorites(){$("favorites-grid").innerHTML=user.favorites.map(function(id){var g=goods.filter(function(x){return x.id===id})[0];if(!g)return"";return goodsCardHTML(g)}).join("");$("favorites-end").textContent=user.favorites.length?"没有更多了~":"还没有收藏商品"}
+
+var orderTab="bought",ordersData={bought:[],sold:[]};
+function buyGoods(){var g=currentGoods;if(!g)return;api("/api/user/"+USER_ID+"/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({goodsId:g.id})}).then(function(r){return r.json()}).then(function(d){if(d.code===0){toast("下单成功！可在历史订单查看")}else{toast(d.msg||"下单失败")}}).catch(function(){toast("请先启动后端服务")})}
+function loadOrders(){api("/api/user/"+USER_ID+"/orders").then(function(r){return r.json()}).then(function(d){if(d.code===0){ordersData=d.data||{bought:[],sold:[]};renderOrders()}}).catch(function(){})}
+function switchOrderTab(t){orderTab=t;var a=$("otab-bought"),b=$("otab-sold"),on="1.5px solid var(--p)",off="1.5px solid var(--line)";if(t==="bought"){a.style.border=on;a.style.background="var(--ps)";a.style.color="var(--p)";b.style.border=off;b.style.background="var(--card)";b.style.color="var(--ink3)"}else{b.style.border=on;b.style.background="var(--ps)";b.style.color="var(--p)";a.style.border=off;a.style.background="var(--card)";a.style.color="var(--ink3)"}renderOrders()}
+function orderCardHTML(o){var g=o.goods;if(!g)return"";var cv=g.image?'<div class="goods-cover" style="background-image:url('+esc(g.image)+');background-size:cover;background-position:center"></div>':'<div class="goods-cover" style="background:'+G(g.grad)+'">'+esc(g.emoji)+'</div>';var who=orderTab==="bought"?("卖家: "+esc(o.sellerName)):"买家: "+esc(o.buyerName);return '<div class="goods-card" onclick="openDetail('+g.id+')">'+cv+'<div class="goods-meta"><div class="goods-name">'+esc(g.name)+'</div><div class="goods-price"><small>¥</small>'+o.price+'</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">'+who+' · '+esc(o.time)+'</div></div></div>'}
+function renderOrders(){var list=ordersData[orderTab]||[];$("orders-grid").innerHTML=list.length?list.map(orderCardHTML).join(""):'<div style="text-align:center;padding:40px 0;color:var(--ink3);grid-column:span 2">'+(orderTab==="bought"?"还没有买到的商品":"还没有卖出的商品")+'</div>';$("orders-end").textContent=list.length?"没有更多了~":"暂无订单"}
+function renderFollows(){$("follows-scroll").innerHTML=followsData.map(function(f){return '<div class="msg-card" onclick="openSeller(\''+esc(f.name)+'\',\''+esc(f.avatar)+'\','+f.grad+')"><div class="avatar-circle" style="width:46px;height:46px;background:'+G(f.grad)+'">'+esc(f.avatar)+'</div><div style="flex:1;min-width:0;margin-left:12px"><div style="font-size:14px;font-weight:600">'+esc(f.name)+'</div><div style="font-size:12px;color:var(--ink3);margin-top:3px">'+esc(f.bio)+'</div></div><div style="font-size:12px;color:var(--ink3)">'+f.goods+'件</div></div>'}).join("")}
+function renderSettings(){$("settings-menu").innerHTML=settingsData.map(function(s,i){var right="";if(s.options){right='<select class="setting-select" onchange="onSettingChange('+i+',this.value)">'+s.options.map(function(o,j){return '<option value="'+j+'"'+(j===s.value?' selected':'')+'>'+o+'</option>'}).join("")+'</select>'}else{if(s.sub)right='<div class="menu-sub">'+s.sub+'</div>';right+='<span style="color:var(--ink3)">›</span>'}var oc=s.options?'':' onclick="onSettingClick('+i+')"';return '<div class="menu-item"'+oc+'><div class="menu-ico">'+s.icon+'</div><div class="menu-label">'+s.label+'</div>'+right+'</div>'}).join("")}
+function onSettingChange(i,v){settingsData[i].value=Number(v);toast(settingsData[i].label+": "+settingsData[i].options[Number(v)])}
+function onSettingClick(i){var s=settingsData[i];if(s.action==="cache"){s.sub="0.0MB";renderSettings();toast("缓存已清除")}else if(s.action==="logout"){USER_ID='';aiSessionId=0;aiHistory=[];if(ws){ws.close();ws=null}goPage("login");$("login-user").value="";$("login-pass").value="";$("login-err").textContent="";$("reg-user").value="";$("reg-pass").value="";$("reg-nick").value="";$("reg-err").textContent=""}else if(s.action==="about")toast("校园市集 v1.0.0");else if(s.action==="help")toast("帮助文档开发中");else toast(s.label)}
+function renderReviews(){$("reviews-scroll").innerHTML=reviewsData.length?reviewsData.map(function(r){var stars="";for(var i=0;i<5;i++)stars+=i<r.rating?"⭐":"☆";return '<div class="info-card" style="cursor:pointer" onclick="openDetail('+r.gid+')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:14px">'+esc(r.goods)+'</b><span style="font-size:13px">'+stars+'</span></div><div style="font-size:13px;color:var(--ink2);margin-top:8px;line-height:20px">'+esc(r.content)+'</div><div style="font-size:11px;color:var(--ink3);margin-top:6px">评价 '+esc(r.seller)+' · '+esc(r.time)+' · 点击查看商品 ›</div></div>'}).join(""):'<div style="text-align:center;color:var(--ink3);font-size:14px;padding:40px 0">暂无评价</div>'}
+
+function initPublish(){$("pub-name").value="";$("pub-price").value="";$("pub-desc").value="";$("pub-cate").innerHTML=CATS.map(function(c){return '<option>'+c+'</option>'}).join("");$("pub-cond").innerHTML=CONDS.map(function(c){return '<option>'+c+'</option>'}).join("");$("pub-region").innerHTML=REGIONS.map(function(r){return '<option>'+r+'</option>'}).join("");$("pub-type").innerHTML=TYPES.map(function(t){return '<option>'+t+'</option>'}).join("");pubEmoji="📦";pubImage=null;$("pub-image-area").innerHTML='<span>📷 点击上传图片</span>';renderEmojiPick()}
+function renderEmojiPick(){$("pub-emoji-pick").innerHTML=EMOJIS.map(function(e){return '<button class="emoji-btn'+(e===pubEmoji?' on':'')+'" onclick="pickEmoji(\''+e+'\')">'+e+'</button>'}).join("")}
+function pickEmoji(e){pubEmoji=e;renderEmojiPick()}
+function uploadPubImage(input){var f=input.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){pubImage=e.target.result;$("pub-image-area").innerHTML='<img src="'+pubImage+'">'};r.readAsDataURL(f)}
+function publishGoods(){
+var name=$("pub-name").value.trim(),price=$("pub-price").value.trim();
+if(!name){toast("请填写商品名称");return}
+if(!price||Number(price)<=0){toast("请填写有效价格");return}
+var g={name:name,price:Number(price),emoji:pubEmoji,image:pubImage,grad:Math.floor(Math.random()*10),seller:user.nickName,sa:"🦊",sg:0,time:"刚刚",desc:$("pub-desc").value.trim()||"暂无描述",cond:$("pub-cond").value,cate:$("pub-cate").value,region:$("pub-region").value,type:$("pub-type").value};
+api("/api/user/"+USER_ID+"/published",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(g)}).then(function(r){return r.json()}).then(function(d){if(d.code===0){g.id=d.data.id;goods.push(g);user.published.push(g.id);toast("发布成功！");goPage("published");renderMine()}else{var newId=goods.length>0?Math.max.apply(null,goods.map(function(x){return x.id}))+1:1;g.id=newId;goods.push(g);user.published.push(newId);toast("发布成功（本地）！");goPage("published");renderMine()}}).catch(function(){var newId=goods.length>0?Math.max.apply(null,goods.map(function(x){return x.id}))+1:1;g.id=newId;goods.push(g);user.published.push(newId);toast("发布成功（本地）！");goPage("published");renderMine()});
+}
+
+function tick(){var d=new Date();$("clock").textContent=d.getHours()+":"+(d.getMinutes()<10?"0":"")+d.getMinutes()}
+
+reviewsData.forEach(function(r){var g=goods.filter(function(x){return x.id===r.gid})[0];if(g){if(!g._comments)g._comments=commentData.slice();g._comments.push({name:user.nickName,avatar:"🦊",grad:0,content:r.content,time:r.time,isSeller:0})}});
+function initFromServer(){api("/api/goods").then(function(r){if(!r.ok)throw new Error("");return r.json()}).then(function(d){if(d.code===0&&d.data&&d.data.length){goods=d.data.map(mapGoods);renderGoods();renderChips()}}).catch(function(){});api("/api/user/"+USER_ID,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})}).then(function(r){if(!r.ok)throw new Error("");return r.json()}).then(function(d){if(d.code===0&&d.data){user.nickName=d.data.nickName||user.nickName;user.bio=d.data.bio||user.bio;if(d.data.avatar)user.avatar=d.data.avatar;if(d.data.published)user.published=d.data.published;if(d.data.favorites)user.favorites=d.data.favorites;if(d.data.follows)followedSellers=d.data.follows;renderMine()}}).catch(function(){})}
+function loadUserData(){
+reviewsData=[];msgData=[];
+api("/api/user/"+USER_ID+"/reviews").then(function(r){return r.json()}).then(function(d){if(d&&d.code===0&&Array.isArray(d.data)){reviewsData=d.data;renderMine()}}).catch(function(){});
+api("/api/user/"+USER_ID+"/chats").then(function(r){return r.json()}).then(function(d){if(d&&d.code===0&&d.data){msgData=Object.keys(d.data).map(function(k){return {name:k,emoji:"🧑",grad:0,badge:0,chats:d.data[k]||[]}});renderMessages()}}).catch(function(){});
+loadOrders();
+}
+function doLogin(){var u=$("login-user").value.trim();var p=$("login-pass").value.trim();if(!u){$("login-err").textContent="请输入用户ID";return}if(!p){$("login-err").textContent="请输入密码";return}$("login-err").textContent="";api("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:u,password:p})}).then(function(r){return r.json()}).then(function(d){if(d.code!==0){$("login-err").textContent=d.msg||"登录失败";return}USER_ID=u;var dd=d.data;if(dd){user.nickName=dd.nickName||u;user.bio=dd.bio||user.bio;if(dd.avatar)user.avatar=dd.avatar;if(dd.published)user.published=dd.published;if(dd.favorites)user.favorites=dd.favorites;if(dd.follows)followedSellers=dd.follows}connectWS();loadUserData();renderMine();renderGoods();renderCircle();renderMessages();toast("登录成功，欢迎回来！");goPage("recommend")}).catch(function(){$("login-err").textContent="网络错误，请检查后端服务"})}
+function doRegister(){var u=$("reg-user").value.trim();var p=$("reg-pass").value.trim();var n=$("reg-nick").value.trim();if(!u){$("reg-err").textContent="请设置用户ID";return}if(!p){$("reg-err").textContent="请设置密码";return}if(p.length!==6||!/^\d{6}$/.test(p)){$("reg-err").textContent="密码必须为6位数字";return}$("reg-err").textContent="";api("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:u,password:p,nickName:n||u})}).then(function(r){return r.json()}).then(function(d){if(d.code!==0){$("reg-err").textContent=d.msg||"注册失败";return}USER_ID=u;user.nickName=n||u;user.bio="这个人很懒，什么都没留下～";user.published=[];user.favorites=[];followedSellers=[];connectWS();loadUserData();renderMine();renderGoods();renderCircle();renderMessages();toast("注册成功，欢迎加入校园市集！");goPage("recommend")}).catch(function(){$("reg-err").textContent="网络错误，请检查后端服务"})}
+tick();setInterval(tick,30000);api("/api/goods").then(function(r){if(!r.ok)throw new Error("");return r.json()}).then(function(d){if(d.code===0&&d.data&&d.data.length){goods=d.data.map(mapGoods);renderGoods();renderChips()}}).catch(function(){});
+$("search-input").addEventListener("input",renderGoods);
+$("recommend-scroll").addEventListener("scroll",function(){var b=$("back-top");if(this.scrollTop>240)b.classList.add("show");else b.classList.remove("show")});
+$("circle-scroll").addEventListener("scroll",function(){var b=$("circle-back-top");if(this.scrollTop>240)b.classList.add("show");else b.classList.remove("show")});
+// ========== AI智能体 ==========
+var aiSessionId=0,aiHistory=[],aiContext=null;
+function openAIChat(ctx){aiContext=ctx||null;goPage("ai");api("/api/ai/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:USER_ID,entry:ctx?"detail":"float",context:ctx})}).then(function(r){return r.json()}).then(function(d){if(d.code===0)aiSessionId=d.data.id}).catch(function(){});$("ai-scroll").innerHTML="";aiHistory=[];var w=aiContext?"你好！我是小集AI助手。看到你对「"+esc(aiContext.name)+"」感兴趣，我可以帮你：\n💰 估价（查本校真实成交价）\n💬 砍价话术\n🛡️ 验货防骗\n\nAI生成仅供参考，不构成交易担保。":"你好！我是小集AI助手，可以帮你：\n💰 智能估价（查本校真实成交价）\n🔍 帮我找货（自然语言搜索）\n🛡️ 验货防骗（安全交易清单）\n📋 交易规则（平台规则问答）\n✍️ 帮我写文案（生成发布内容）\n⚠️ 违规预检（发布前检查）\n\nAI生成仅供参考，不构成交易担保。";renderAIBotMsg(w)}
+function renderAIUserMsg(t){var d=document.createElement("div");d.className="ai-msg u";d.innerHTML='<div class="ai-bb">'+esc(t)+'</div>';$("ai-scroll").appendChild(d);$("ai-scroll").scrollTop=$("ai-scroll").scrollHeight}
+function renderAIBotMsg(t){var d=document.createElement("div");d.className="ai-msg b";d.innerHTML='<div class="ai-av">🤖</div><div class="ai-bb">'+t.replace(/\n/g,"<br>")+'</div>';$("ai-scroll").appendChild(d);$("ai-scroll").scrollTop=$("ai-scroll").scrollHeight;return d}
+function renderAIContent(text){var parts=[];var re=/\[([^\]]+)\]/g;var last=0;var m;while((m=re.exec(text))!==null){if(m.index>last)parts.push({t:0,v:text.slice(last,m.index)});parts.push({t:1,v:m[1]});last=re.lastIndex}if(last<text.length)parts.push({t:0,v:text.slice(last)});return parts.map(function(p){if(p.t===0)return esc(p.v).replace(/\n/g,"<br>");return '<button class="ai-act" onclick="aiAction(\''+p.v.replace(/'/g,"\\'").replace(/"/g,"&quot;")+'\')">'+esc(p.v)+'</button>'}).join("")}
+function aiAction(label){var msg=label.replace(/^[🔍📚💰🛡️📋✍️⚠️💬✅]\s*/,"");$("ai-input").value=msg;sendAIMsg()}
+function renderAIGoodsCards(results){if(!results||!results.length)return"";return results.map(function(g){return '<div class="ai-gcard" onclick="openGoodsById('+g.id+')"><div class="ai-gcard-emoji">'+(g.emoji||"📦")+'</div><div class="ai-gcard-info"><div class="ai-gcard-name">'+esc(g.name||"")+'</div><div class="ai-gcard-meta">'+esc(g.cate||"")+' · '+esc(g.cond||"")+' · '+esc(g.seller||"")+'</div></div><div class="ai-gcard-price">¥'+(g.price||0)+'</div></div>'}).join("")}
+function openGoodsById(id){var g=goods.find(function(x){return x.id===id});if(g)openDetail(g.id)}
+function sendAIMsg(){var inp=$("ai-input");var t=inp.value.trim();if(!t)return;inp.value="";renderAIUserMsg(t);aiHistory.push({role:"user",content:t});var td=renderAIBotMsg('<span class="ai-tp"></span>');var bb=td.querySelector(".ai-bb");var ft="";(async function(){if(!aiSessionId){try{var sr=await api("/api/ai/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:USER_ID,entry:aiContext?"detail":"float",context:aiContext})});var sd=await sr.json();if(sd.code===0)aiSessionId=sd.data.id;}catch(e){}}try{var ac=new AbortController();var at=setTimeout(function(){ac.abort()},30000);var resp=await api("/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:aiSessionId,message:t,history:aiHistory}),signal:ac.signal});clearTimeout(at);if(!resp.ok)throw new Error("HTTP "+resp.status);var reader=resp.body.getReader();var dec=new TextDecoder();var buf="";while(true){var r=await reader.read();if(r.done){if(ft)aiHistory.push({role:"assistant",content:ft});break}buf+=dec.decode(r.value,{stream:true});var idx;while((idx=buf.indexOf("\n\n"))>=0){var evt=buf.slice(0,idx);buf=buf.slice(idx+2);evt.split("\n").forEach(function(ln){if(ln.indexOf("data: ")===0){try{var c=JSON.parse(ln.slice(6));if(c.type==="text"){ft+=c.content;bb.innerHTML=esc(ft).replace(/\n/g,"<br>")+'<span class="ai-tp"></span>'}else if(c.type==="tool_call"){var tn=c.tool==="estimate_price"?"智能估价":"找货";var gc="";if(c.tool==="search_goods"&&c.result&&c.result.length)gc=renderAIGoodsCards(c.result);bb.innerHTML='<div class="ai-cd"><div class="ai-cd-t">🔧 调用工具: '+tn+'</div>'+(gc||'<div class="ai-cd-r">正在查询真实数据...</div>')+'</div>'}else if(c.type==="done"||c.type==="final"){if(c.reply)ft=c.reply;bb.innerHTML=renderAIContent(ft)+'<div class="ai-dc">AI生成仅供参考，不构成交易担保</div>'}else if(c.type==="error"){bb.innerHTML='<div style="color:var(--danger);font-size:13px">AI服务异常: '+esc(c.message||'未知错误')+'</div><div class="ai-dc">请稍后重试</div>'}}catch(e){}}});$("ai-scroll").scrollTop=$("ai-scroll").scrollHeight}}}catch(e){bb.innerHTML='<div style="color:var(--danger);font-size:13px">'+esc(e.name==="AbortError"?"AI响应超时，请稍后重试":e.message)+'</div><div class="ai-dc">AI生成仅供参考</div>'}})()}
+function aiQuick(f){var m={estimate:"帮我估价，我想卖一个九成新的商品",search:"帮我找一本考研教材",inspect:"给我一份验货防骗清单",rule:"交易规则是什么",copywrite:"帮我写一段商品文案",precheck:"帮我检查这段描述是否违规：九成新iPad低价转让"};$("ai-input").value=m[f]||"";sendAIMsg()}
+function askAIAboutGoods(){if(!currentGoods){toast("请先打开商品");return}openAIChat({name:currentGoods.name,price:currentGoods.price,cate:currentGoods.cate,cond:currentGoods.cond});setTimeout(function(){$("ai-input").value="帮我估价："+currentGoods.name+"，"+currentGoods.cate+"，"+currentGoods.cond+"，现在标价"+currentGoods.price+"元，合理吗？给我砍价话术。";sendAIMsg()},500)}
+function aiHelpWrite(){toast("AI正在生成文案...");var info={name:$("pub-name").value||"",cate:$("pub-cate").value||"",cond:$("pub-cond").value||"",imageDesc:pubImage?"已上传图片":"无图片"};api("/api/ai/copywrite",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(info)}).then(function(r){return r.json()}).then(function(d){if(d.code===0){var g=d.data;if(g.title)$("pub-name").value=g.title;if(g.desc)$("pub-desc").value=g.desc;if(g.price)$("pub-price").value=g.price;toast("已生成: "+(g.title||"文案")+" ¥"+(g.price||""))}else{toast("生成失败")}}).catch(function(){toast("请先启动后端服务")})}
+</script>
+</body>
+</html>

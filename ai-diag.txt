@@ -1,0 +1,20 @@
+=== 配置检查 ===
+apiKey 前20字符: sk-ws-H.YDYHLLE.lRGC...
+apiKey 长度: 117
+model: qwen-turbo
+apiUrl: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+
+=== 直接调用通义千问 ===
+HTTP 状态: 429
+resp.ok: false
+返回体: {"error":{"message":"You have exceeded your current request limit. For details, see: https://help.aliyun.com/zh/model-studio/error-code#rate-limit","type":"limit_requests","param":null,"code":"limit_requests"},"request_id":"69f3a9f5-5100-99b0-9dc0-7164c00be43e"}
+
+=== 通过服务器 /api/chat/ai ===
+状态: 200
+回复: 嗯嗯
+AI: false
+错误: HTTP 429
+
+=== 通过服务器 /api/ai/chat (SSE) ===
+状态: 200
+SSE 数据前300字符: 

@@ -1,0 +1,16 @@
+{
+  "name": "campus-market-server",
+  "version": "1.0.0",
+  "description": "校园二手交易平台后端",
+  "main": "index.js",
+  "scripts": {
+    "start": "node start.js",
+    "server": "node index.js",
+    "db:init": "node init-db.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "mysql2": "^3.24.6",
+    "ws": "^8.22.0"
+  }
+}

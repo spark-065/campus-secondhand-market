@@ -1,0 +1,5 @@
+Status:200
+HasLogin:YES
+HasDoLogin:YES
+HasLogoutGoPage:YES
+HasLoginCSS:YES

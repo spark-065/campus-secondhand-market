@@ -1,0 +1,15 @@
+{
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "code-runner.runInTerminal": true,
+  "code-runner.saveFileBeforeRun": true,
+  "code-runner.clearPreviousOutput": true,
+  "code-runner.executorMap": {
+    "javascript": "cd $dir && node",
+    "html": "cd $dir && start \"\" index.html"
+  },
+  "liveServer.settings.port": 5500,
+  "liveServer.settings.AdvanceCustomBrowserCmdLine": "",
+  "files.autoSave": "afterDelay",
+  "editor.fontSize": 14,
+  "explorer.confirmDelete": false
+}

@@ -1,0 +1,7 @@
+node_modules/
+*.zip
+server/.env
+server/config.json
+server/users.json
+server/data.json
+server/db/

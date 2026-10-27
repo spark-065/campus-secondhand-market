@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "启动后端服务 (server)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/start.js",
+      "cwd": "${workspaceFolder}/server",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "初始化数据库 (init-db)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/init-db.js",
+      "cwd": "${workspaceFolder}/server",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "启动后端并打开浏览器",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/start.js",
+      "cwd": "${workspaceFolder}/server",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "地址: (http://localhost:\\d+)",
+        "uriFormat": "%s"
+      }
+    }
+  ]
+}

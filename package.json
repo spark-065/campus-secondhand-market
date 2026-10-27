@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "npm start --prefix server",
+    "db:init": "npm run db:init --prefix server"
+  },
+  "dependencies": {
+    "jsdom": "^30.1.3"
+  }
+}

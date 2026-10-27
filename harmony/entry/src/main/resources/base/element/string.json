@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "校园市集入口模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "entry ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "校园市集"
+    }
+  ]
+}
