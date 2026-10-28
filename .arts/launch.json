@@ -11,6 +11,15 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
+      "name": "启动后端 (index.js，MySQL 已启动时用)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/index.js",
+      "cwd": "${workspaceFolder}/server",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
       "name": "初始化数据库 (init-db)",
       "type": "node",
       "request": "launch",
