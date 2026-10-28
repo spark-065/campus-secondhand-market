@@ -3,5 +3,5 @@ node_modules/
 server/.env
 server/config.json
 server/users.json
-server/data.json
 server/db/
+# 注意：server/data.json 是 init-db.js 的种子数据，必须提交，别加进忽略

@@ -18,11 +18,19 @@ const pool = mysql.createPool({
 app.use(express.json({ limit: '10mb' }));
 
 const TOKEN = process.env.APP_TOKEN || 'dev-token';
-const ALLOWED_ORIGINS = ['null', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+// 允许所有本机来源（localhost / 127.0.0.1 任意端口）以及 file:// 的 'null'，方便本地调试与 IDE 内置预览
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (origin === 'null') return true;
+  try {
+    const u = new URL(origin);
+    return u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  } catch (e) { return false; }
+}
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type,x-app-token');
