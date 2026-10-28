@@ -4,6 +4,7 @@
     {
       "name": "启动后端服务 (server)",
       "type": "node",
+      "runtimeExecutable": "D:\\DevTools\\nodejs\\node.exe",
       "request": "launch",
       "program": "${workspaceFolder}/server/start.js",
       "cwd": "${workspaceFolder}/server",
@@ -13,6 +14,7 @@
     {
       "name": "启动后端 (index.js，MySQL 已启动时用)",
       "type": "node",
+      "runtimeExecutable": "D:\\DevTools\\nodejs\\node.exe",
       "request": "launch",
       "program": "${workspaceFolder}/server/index.js",
       "cwd": "${workspaceFolder}/server",
@@ -22,6 +24,7 @@
     {
       "name": "初始化数据库 (init-db)",
       "type": "node",
+      "runtimeExecutable": "D:\\DevTools\\nodejs\\node.exe",
       "request": "launch",
       "program": "${workspaceFolder}/server/init-db.js",
       "cwd": "${workspaceFolder}/server",
@@ -30,6 +33,7 @@
     {
       "name": "启动后端并打开浏览器",
       "type": "node",
+      "runtimeExecutable": "D:\\DevTools\\nodejs\\node.exe",
       "request": "launch",
       "program": "${workspaceFolder}/server/start.js",
       "cwd": "${workspaceFolder}/server",
